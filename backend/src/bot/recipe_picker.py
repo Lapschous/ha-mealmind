@@ -32,3 +32,63 @@ def bot_options_message(random_dinners_dict):
         option_message += recipe_message
 
     return db_recipe_index, option_message
+
+def get_recipe_html(recipe_id):
+    db_path = "backend/src/db/recipes.db"
+
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row 
+    cursor = conn.cursor()
+
+    # metadata
+    cursor.execute(
+        "SELECT title, description FROM recipe_meta WHERE recipe_id = ?",
+        (recipe_id,),
+    )
+    meta = cursor.fetchone()
+    if meta is None:
+        return None
+    title, description = meta
+
+    # ingredients
+    cursor.execute(
+        """
+        SELECT ingredients.name,
+                recipe_ingredients.amount,
+                recipe_ingredients.unit,
+                recipe_ingredients.prep_method
+        FROM recipe_ingredients
+        JOIN ingredients
+            ON ingredients.ingredient_id = recipe_ingredients.ingredient_id
+        WHERE recipe_ingredients.recipe_id = ?
+        ORDER BY recipe_ingredients.recipe_ingredient_id
+        """,
+        (recipe_id,),
+    )
+    ingredients = cursor.fetchall()
+
+    # instructions
+    cursor.execute(
+        """
+        SELECT step_number, instruction
+        FROM recipe_steps
+        WHERE recipe_id = ?
+        ORDER BY step_number
+        """,
+        (recipe_id,),
+    )
+    steps = cursor.fetchall()
+
+    # putting the message together
+    message = f"<b>{html.escape(title)}</b>\n"
+    message += f"<i>{html.escape(description)}</i>\n\n"
+
+    message += "<b>Ingredients</b>\n"
+    for name, amount, unit, prep_method in ingredients:
+        message += f"• {amount} {unit} {name}\n"
+
+    message += "\n<b>Instructions</b>\n"
+    for step_number, instruction in steps:
+        message += f"{step_number}. {html.escape(instruction)}\n"
+
+    return message

@@ -1,8 +1,7 @@
 import os
 from dotenv import load_dotenv
 import telebot
-from recipe_picker import random_dinners, bot_options_message
-#import logging
+from recipe_picker import get_recipe_html, random_dinners, bot_options_message, get_recipe_html
 
 load_dotenv()
 
@@ -56,7 +55,8 @@ def pick(message):
 def on_recipe(call):
     bot.answer_callback_query(call.id)
     recipe_id = int(call.data)
-    # TODO: Return engineering recipe for the selected recipe_id
-    bot.send_message(call.message.chat.id, f"That recipes db_index is {recipe_id}")
+    formatted_recipe = get_recipe_html(recipe_id) # for now it will return html formatted recipe from the db
+    # TODO: Return engineering recipe for the selected recipe_id 
+    bot.send_message(call.message.chat.id, formatted_recipe)
 
 bot.polling()
