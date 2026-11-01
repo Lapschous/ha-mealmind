@@ -80,7 +80,7 @@ def get_recipe_html(recipe_id):
     steps = cursor.fetchall()
 
     # putting the message together
-    message = f"<b>{html.escape(title)}</b>\n"
+    message = f"<b>{html.escape(title).title()}</b>\n"
     message += f"<i>{html.escape(description)}</i>\n\n"
 
     message += "<b>Ingredients</b>\n"
