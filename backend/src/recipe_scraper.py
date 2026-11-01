@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import time
 import trafilatura
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
@@ -341,10 +342,15 @@ def store_recipe_in_db(normalized_url: str, recipe_data: dict, db_path=DB_PATH) 
 
 def scrape_recipe(url: str) -> None:
     """Orginization function to complete entire scrape to normalization"""
+    print(f"Scraping {url}", flush=True)
+    start = time.time()
     clean_content = receive_and_clean(url)
+    print(f"  Page fetched ({time.time() - start:.0f}s), sending to LLM...", flush=True)
     response = scrape_with_llm(clean_content)
+    print(f"  LLM done ({time.time() - start:.0f}s), storing in DB...", flush=True)
     normalized_url = normalize_url(url)
     store_recipe_in_db(normalized_url, response)
+    print(f"Completed {url} ({time.time() - start:.0f}s)", flush=True)
 
 
 recipe_urls = ["https://www.bbcgoodfood.com/recipes/gnocchi-cacio-e-pepe", "https://www.bbcgoodfood.com/recipes/air-fryer-pork-chops", "https://www.bbcgoodfood.com/recipes/healthy-beef-chow-mein", "https://www.bbcgoodfood.com/recipes/speedy-chorizo-ragu-lasagne", "https://www.bbcgoodfood.com/recipes/garlic-mushroom-flatbread-pizzas", "https://www.bbcgoodfood.com/recipes/pasta-purple-sprouting-broccoli-with-anchovies-garlic-preserved-lemon", "https://www.bbcgoodfood.com/recipes/10minute-couscous-salad", "https://www.bbcgoodfood.com/recipes/ginger-sesame-chilli-prawn-broccoli-stir-fry", "https://www.bbcgoodfood.com/recipes/chicken-pasta-bake", "https://www.bbcgoodfood.com/recipes/easy-chicken-curry", "https://www.bbcgoodfood.com/recipes/sausage-ragu", "https://www.bbcgoodfood.com/recipes/fish-pie-mac-n-cheese", "https://www.bbcgoodfood.com/recipes/speedy-lentil-coconut-curry", "https://www.bbcgoodfood.com/recipes/fajita-style-pasta", "https://www.bbcgoodfood.com/recipes/creamy-garlic-pasta", "https://www.bbcgoodfood.com/recipes/meatball-black-bean-chilli", "https://www.bbcgoodfood.com/recipes/creamy-salmon-leek-potato-traybake", "https://www.bbcgoodfood.com/recipes/spicy-chickpea-stew", "https://www.bbcgoodfood.com/recipes/veggie-sausage-casserole", "https://www.bbcgoodfood.com/recipes/chicken-leek-brown-rice-stir-fry", "https://www.bbcgoodfood.com/recipes/gnocchi-cacio-e-pepe", "https://www.bbcgoodfood.com/recipes/roasted-carrot-whipped-feta-tart", "https://www.bbcgoodfood.com/recipes/bean-halloumi-stew", "https://www.bbcgoodfood.com/recipes/veggie-yaki-udon", "https://www.bbcgoodfood.com/recipes/piri-piri-chicken-smashed-sweet-potatoes-broccoli", "https://www.bbcgoodfood.com/recipes/roasted-cauliflower-chickpea-coconut-curry"]
