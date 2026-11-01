@@ -146,7 +146,7 @@ def receive_and_clean(url: str) -> str:
 def scrape_with_llm(clean_content: str) -> dict:
     """Uses local llm to turn the md string into structured json"""
     response = ollama.chat(
-        model="ministral-3:8b-instruct-2512-q8_0", 
+        model="hf.co/mistralai/Ministral-3-8B-Instruct-2512-GGUF:Q4_K_M",
         format="json", 
         messages=[{"role": "user", "content": PROMPT + clean_content}],
         options = {"num_predict": 4096, "temperature": 0.3, "num_ctx":8192},
