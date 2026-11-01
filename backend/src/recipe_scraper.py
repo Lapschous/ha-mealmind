@@ -9,6 +9,12 @@ from urllib.parse import urlsplit
 
 DB_PATH = "backend/src/db/recipes.db"
 
+KEEP_KEYS = {
+    "name", "description", "recipeYield", "prepTime", "cookTime", "totalTime",
+    "recipeIngredient", "recipeInstructions", "recipeCuisine",
+    "recipeCategory", "keywords", "suitableForDiet",
+}
+
 PROMPT = """
         You are a Data Normalization AI for a recipe pipeline. Extract unstructured recipe text (HTML or raw text) into a single, valid JSON object matching the structure below.
         ### TARGET JSON STRUCTURE
@@ -94,7 +100,8 @@ def extract_json_ld(soup: BeautifulSoup) -> str | None:
             items = data if isinstance(data, list) else data.get("@graph", [data])
             for item in items:
                 if item.get("@type") == "Recipe" or "Recipe" in item.get("@type", []):
-                    return json.dumps(item)
+                    trimmed = {k: v for k, v in item.items() if k in KEEP_KEYS}
+                    return json.dumps(trimmed)
         except (json.JSONDecodeError, TypeError, AttributeError):
             continue
     return None
@@ -345,7 +352,10 @@ def scrape_recipe(url: str) -> None:
     print(f"Scraping {url}", flush=True)
     start = time.time()
     clean_content = receive_and_clean(url)
-    print(f"  Page fetched ({time.time() - start:.0f}s), sending to LLM...", flush=True)
+    if not clean_content:
+        print("  No content extracted, skipping", flush=True)
+        return
+    print(f"  Page fetched ({time.time() - start:.0f}s), {len(clean_content)} chars, sending to LLM...", flush=True)
     response = scrape_with_llm(clean_content)
     print(f"  LLM done ({time.time() - start:.0f}s), storing in DB...", flush=True)
     normalized_url = normalize_url(url)
@@ -356,4 +366,7 @@ def scrape_recipe(url: str) -> None:
 recipe_urls = ["https://www.bbcgoodfood.com/recipes/gnocchi-cacio-e-pepe", "https://www.bbcgoodfood.com/recipes/air-fryer-pork-chops", "https://www.bbcgoodfood.com/recipes/healthy-beef-chow-mein", "https://www.bbcgoodfood.com/recipes/speedy-chorizo-ragu-lasagne", "https://www.bbcgoodfood.com/recipes/garlic-mushroom-flatbread-pizzas", "https://www.bbcgoodfood.com/recipes/pasta-purple-sprouting-broccoli-with-anchovies-garlic-preserved-lemon", "https://www.bbcgoodfood.com/recipes/10minute-couscous-salad", "https://www.bbcgoodfood.com/recipes/ginger-sesame-chilli-prawn-broccoli-stir-fry", "https://www.bbcgoodfood.com/recipes/chicken-pasta-bake", "https://www.bbcgoodfood.com/recipes/easy-chicken-curry", "https://www.bbcgoodfood.com/recipes/sausage-ragu", "https://www.bbcgoodfood.com/recipes/fish-pie-mac-n-cheese", "https://www.bbcgoodfood.com/recipes/speedy-lentil-coconut-curry", "https://www.bbcgoodfood.com/recipes/fajita-style-pasta", "https://www.bbcgoodfood.com/recipes/creamy-garlic-pasta", "https://www.bbcgoodfood.com/recipes/meatball-black-bean-chilli", "https://www.bbcgoodfood.com/recipes/creamy-salmon-leek-potato-traybake", "https://www.bbcgoodfood.com/recipes/spicy-chickpea-stew", "https://www.bbcgoodfood.com/recipes/veggie-sausage-casserole", "https://www.bbcgoodfood.com/recipes/chicken-leek-brown-rice-stir-fry", "https://www.bbcgoodfood.com/recipes/gnocchi-cacio-e-pepe", "https://www.bbcgoodfood.com/recipes/roasted-carrot-whipped-feta-tart", "https://www.bbcgoodfood.com/recipes/bean-halloumi-stew", "https://www.bbcgoodfood.com/recipes/veggie-yaki-udon", "https://www.bbcgoodfood.com/recipes/piri-piri-chicken-smashed-sweet-potatoes-broccoli", "https://www.bbcgoodfood.com/recipes/roasted-cauliflower-chickpea-coconut-curry"]
 
 for url in recipe_urls:
-    scrape_recipe(url)
+    try:
+        scrape_recipe(url)
+    except Exception as e:
+        print(f"  FAILED {url}: {e}", flush=True)
