@@ -158,7 +158,7 @@ def scrape_with_llm(clean_content: str) -> dict:
         format="json", 
         messages=[{"role": "user", "content": PROMPT + clean_content}],
         options = {"num_predict": 4096, "temperature": 0.3, "num_ctx":8192},
-        keep_alive="30m"
+        keep_alive = 0
     )
 
     #Converts response to a python readable dict
@@ -362,8 +362,78 @@ def scrape_recipe(url: str) -> None:
     store_recipe_in_db(normalized_url, response)
     print(f"Completed {url} ({time.time() - start:.0f}s)", flush=True)
 
-
-recipe_urls = ["https://www.bbcgoodfood.com/recipes/gnocchi-cacio-e-pepe", "https://www.bbcgoodfood.com/recipes/air-fryer-pork-chops", "https://www.bbcgoodfood.com/recipes/healthy-beef-chow-mein", "https://www.bbcgoodfood.com/recipes/speedy-chorizo-ragu-lasagne", "https://www.bbcgoodfood.com/recipes/garlic-mushroom-flatbread-pizzas", "https://www.bbcgoodfood.com/recipes/pasta-purple-sprouting-broccoli-with-anchovies-garlic-preserved-lemon", "https://www.bbcgoodfood.com/recipes/10minute-couscous-salad", "https://www.bbcgoodfood.com/recipes/ginger-sesame-chilli-prawn-broccoli-stir-fry", "https://www.bbcgoodfood.com/recipes/chicken-pasta-bake", "https://www.bbcgoodfood.com/recipes/easy-chicken-curry", "https://www.bbcgoodfood.com/recipes/sausage-ragu", "https://www.bbcgoodfood.com/recipes/fish-pie-mac-n-cheese", "https://www.bbcgoodfood.com/recipes/speedy-lentil-coconut-curry", "https://www.bbcgoodfood.com/recipes/fajita-style-pasta", "https://www.bbcgoodfood.com/recipes/creamy-garlic-pasta", "https://www.bbcgoodfood.com/recipes/meatball-black-bean-chilli", "https://www.bbcgoodfood.com/recipes/creamy-salmon-leek-potato-traybake", "https://www.bbcgoodfood.com/recipes/spicy-chickpea-stew", "https://www.bbcgoodfood.com/recipes/veggie-sausage-casserole", "https://www.bbcgoodfood.com/recipes/chicken-leek-brown-rice-stir-fry", "https://www.bbcgoodfood.com/recipes/gnocchi-cacio-e-pepe", "https://www.bbcgoodfood.com/recipes/roasted-carrot-whipped-feta-tart", "https://www.bbcgoodfood.com/recipes/bean-halloumi-stew", "https://www.bbcgoodfood.com/recipes/veggie-yaki-udon", "https://www.bbcgoodfood.com/recipes/piri-piri-chicken-smashed-sweet-potatoes-broccoli", "https://www.bbcgoodfood.com/recipes/roasted-cauliflower-chickpea-coconut-curry"]
+recipe_urls = [
+    "https://www.bbcgoodfood.com/recipes/white-sourdough",
+    "https://www.bbcgoodfood.com/recipes/focaccia",
+    "https://www.bbcgoodfood.com/recipes/collection",
+    "https://www.bbcgoodfood.com/recipes/chicken-pasta-bake",
+    "https://www.bbcgoodfood.com/recipes/easy-chicken-curry",
+    "https://www.bbcgoodfood.com/recipes/sausage-ragu",
+    "https://www.bbcgoodfood.com/recipes/creamy-pesto-kale-pasta",
+    "https://www.bbcgoodfood.com/recipes/fish-pie-mac-n-cheese",
+    "https://www.bbcgoodfood.com/recipes/speedy-lentil-coconut-curry",
+    "https://www.bbcgoodfood.com/recipes/fajita-style-pasta",
+    "https://www.bbcgoodfood.com/recipes/creamy-garlic-pasta",
+    "https://www.bbcgoodfood.com/recipes/meatball-black-bean-chilli",
+    "https://www.bbcgoodfood.com/recipes/creamy-salmon-leek-potato-traybake",
+    "https://www.bbcgoodfood.com/recipes/spicy-chickpea-stew",
+    "https://www.bbcgoodfood.com/recipes/veggie-sausage-casserole",
+    "https://www.bbcgoodfood.com/recipes/chicken-leek-brown-rice-stir-fry",
+    "https://www.bbcgoodfood.com/recipes/gnocchi-cacio-e-pepe",
+    "https://www.bbcgoodfood.com/recipes/roasted-carrot-whipped-feta-tart",
+    "https://www.bbcgoodfood.com/recipes/bean-halloumi-stew",
+    "https://www.bbcgoodfood.com/recipes/veggie-yaki-udon",
+    "https://www.bbcgoodfood.com/recipes/piri-piri-chicken-smashed-sweet-potatoes-broccoli",
+    "https://www.bbcgoodfood.com/recipes/roasted-cauliflower-chickpea-coconut-curry",
+    "https://www.bbcgoodfood.com/recipes/paneer-korma",
+    "https://www.bbcgoodfood.com/recipes/prawn-tikka-masala",
+    "https://www.bbcgoodfood.com/recipes/cowboy-pie",
+    "https://www.bbcgoodfood.com/recipes/creamy-chicken-stew",
+    "https://www.bbcgoodfood.com/recipes/chicken-chorizo-jambalaya",
+    "https://www.bbcgoodfood.com/recipes/spinach-sweet-potato-lentil-dhal",
+    "https://www.bbcgoodfood.com/recipes/spicy-root-lentil-casserole",
+    "https://www.bbcgoodfood.com/recipes/chinese-chicken-curry",
+    "https://www.bbcgoodfood.com/recipes/chicken-jalfrezi",
+    "https://www.bbcgoodfood.com/recipes/prawn-harissa-spaghetti",
+    "https://www.bbcgoodfood.com/recipes/healthy-tikka-masala",
+    "https://www.bbcgoodfood.com/recipes/chicken-korma",
+    "https://www.bbcgoodfood.com/recipes/easy-risotto-bacon-peas",
+    "https://www.bbcgoodfood.com/recipes/superhealthy-salmon-burgers",
+    "https://www.bbcgoodfood.com/recipes/butter-bean-curry",
+    "https://www.bbcgoodfood.com/recipes/pomegranate-chicken-almond-couscous",
+    "https://www.bbcgoodfood.com/recipes/simple-fish-stew",
+    "https://www.bbcgoodfood.com/recipes/pesto-sausage-traybake",
+    "https://www.bbcgoodfood.com/recipes/healthy-chicken-burritos",
+    "https://www.bbcgoodfood.com/recipes/curried-sate-noodles",
+    "https://www.bbcgoodfood.com/recipes/healthy-gnocchi",
+    "https://www.bbcgoodfood.com/recipes/healthy-chicken-pad-thai",
+    "https://www.bbcgoodfood.com/recipes/tuna-caper-chilli-spaghetti",
+    "https://www.bbcgoodfood.com/recipes/ginger-chicken-udon-noodles",
+    "https://www.bbcgoodfood.com/recipes/one-pot-chicken-rice",
+    "https://www.bbcgoodfood.com/recipes/curried-cod",
+    "https://www.bbcgoodfood.com/recipes/one-pan-beef-stew-with-vegetable-mash",
+    "https://www.bbcgoodfood.com/recipes/zesty-haddock-crushed-potatoes-peas",
+    "https://www.bbcgoodfood.com/recipes/easy-vegetable-lasagne",
+    "https://www.bbcgoodfood.com/recipes/satay-sweet-potato-curry",
+    "https://www.bbcgoodfood.com/recipes/veggie-shepherds-pie-sweet-potato-mash",
+    "https://www.bbcgoodfood.com/recipes/butternut-squash-sage-risotto",
+    "https://www.bbcgoodfood.com/recipes/coconut-squash-dhansak",
+    "https://www.bbcgoodfood.com/recipes/vegetarian-bolognese",
+    "https://www.bbcgoodfood.com/recipes/vegetable-curry-crowd",
+    "https://www.bbcgoodfood.com/recipes/indian-butternut-squash-curry",
+    "https://www.bbcgoodfood.com/recipes/vegetable-pasta-bake",
+    "https://www.bbcgoodfood.com/recipes/mexican-penne-avocado",
+    "https://www.bbcgoodfood.com/recipes/tofu-stir-fry",
+    "https://www.bbcgoodfood.com/recipes/veggie-burrito",
+    "https://www.bbcgoodfood.com/recipes/creamy-broccoli-gnocchi",
+    "https://www.bbcgoodfood.com/recipes/butternut-squash-casserole",
+    "https://www.bbcgoodfood.com/recipes/butternut-squash-cherry-tomato-crumble",
+    "https://www.bbcgoodfood.com/recipes/smoky-mushroom-chickpea-fajitas-with-charred-spring-onion-salsa",
+    "https://www.bbcgoodfood.com/recipes/sticky-tempeh-stir-fry",
+    "https://www.bbcgoodfood.com/recipes/simple-mushroom-curry",
+    "https://www.bbcgoodfood.com/recipes/harissa-broccoli-flatbreads",
+    "https://www.bbcgoodfood.com/recipes/sichuan-chicken"
+]
 
 for url in recipe_urls:
     try:
