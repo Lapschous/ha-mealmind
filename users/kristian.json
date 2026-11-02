@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "user_id": null,
+  "name": "Kristian",
+  "diet": "omnivore",
+  "allergies": [],
+  "dislikes": [],
+  "likes": ["chicken", "beef", "pork", "bacon", "rice", "potatoes", "garlic"],
+  "cuisines": {
+    "likes": ["asian", "american", "italian", "mexican"],
+    "dislikes": []
+  },
+  "spice_tolerance": "high",
+  "cooking": {
+    "skill_level": "intermediate",
+    "max_total_minutes_weeknight": 30,
+    "max_total_minutes_weekend": 90,
+    "equipment": ["stovetop", "oven", "air fryer", "wok"]
+  },
+  "servings": 2,
+  "budget": "low",
+  "goals": ["meat in every dinner", "cheap student meals"],
+  "notes": "Needs meat in every dinner: every suggested recipe must contain meat or poultry as a main component, not just as a garnish or in the stock. Vegetarian dishes should not be suggested unless they are clearly marked as a side dish to go with meat."
+}
