@@ -32,6 +32,11 @@ def start(message):
     welcome_message = f"Hello, <i>{message.from_user.first_name}</i>! I am <i>MealMind</i>.\nUse /help to see what I can do."
     bot.send_message(chat_id=message.chat.id, text=welcome_message)
 
+@bot.message_handler(commands=["user_id"])
+def user_id(message):
+    user_id_message = f"Your user ID is: <i>{message.from_user.id}</i>"
+    bot.send_message(chat_id=message.chat.id, text=user_id_message)
+
 
 @bot.message_handler(commands=["help"])
 def help(message):
