@@ -13,7 +13,7 @@
   "spice_tolerance": "medium",
   "cooking": {
     "skill_level": "intermediate",
-    "max_total_minutes_weeknight": 30,
+    "max_total_minutes_weeknight": 9999,
     "max_total_minutes_weekend": 60,
     "equipment": ["stovetop", "oven", "air fryer"]
   },

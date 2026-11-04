@@ -2,8 +2,10 @@ import os
 import logging
 from dotenv import load_dotenv
 import telebot
-from recipe_picker import get_recipe_html, random_dinners, bot_options_message
+from recipe_picker import (get_recipe_html, random_dinners, bot_options_message,load_user_profile, personal_dinners)
 
+offered_options = {}  
+seen_options = {}     
 load_dotenv()
 
 bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -13,18 +15,27 @@ if not bot_token:
 bot = telebot.TeleBot(token=bot_token, parse_mode="HTML")
 telebot.logger.setLevel(logging.DEBUG)  # shows handler errors in the terminal
 
-offered_options = {}  # chat_id -> list of recipe_ids for db
 
 
-def build_dinner_options(chat_id):
+def build_dinner_options(chat_id, user_id, reroll=False):
     """Pick new dinners, remember them for this chat, return (text, keyboard)."""
-    dinner_suggestion = random_dinners()
-    db_recipe_index, suggestion_message = bot_options_message(dinner_suggestion)
-    offered_options[chat_id] = db_recipe_index
+    key = (chat_id, user_id)
+    profile = load_user_profile(user_id)
+    if profile is None:
+        dinners = random_dinners()
+    else:
+        seen = seen_options.get(key, set()) if reroll else set()
+        dinners = personal_dinners(profile, exclude_ids=seen)
+        seen_options[key] = seen | {r["recipe_id"] for r in dinners}
+
+    db_recipe_index, message = bot_options_message(dinners)
+    offered_options[key] = db_recipe_index
 
     kb = telebot.types.InlineKeyboardMarkup()
-    kb.add(telebot.types.InlineKeyboardButton("Reroll?", callback_data="reroll"))
-    return suggestion_message, kb
+    if dinners:
+        kb.add(telebot.types.InlineKeyboardButton("Reroll", callback_data="reroll"))
+    return message, kb
+
 
 
 @bot.message_handler(commands=["greet"])
@@ -52,30 +63,31 @@ def help(message):
 
 @bot.message_handler(commands=["dinner"])
 def dinner(message):
-    text, kb = build_dinner_options(message.chat.id)
+    bot.send_message(message.chat.id,"Checking recipes ... ") # visually indicating that bot is "thinking"
+    text, kb = build_dinner_options(message.chat.id, message.from_user.id)
     bot.send_message(message.chat.id, text, reply_markup=kb)
 
 
 @bot.message_handler(commands=["pick"])
 def pick(message):
-    options = offered_options.get(message.chat.id, [])
-    if len(options) < 3:
+    options = offered_options.get((message.chat.id, message.from_user.id), [])
+    if not options:
         bot.send_message(message.chat.id, "Use /dinner first to get some options.")
         return
-
     kb = telebot.types.InlineKeyboardMarkup()
-    kb.add(
-        telebot.types.InlineKeyboardButton("Option 1", callback_data=str(options[0])),
-        telebot.types.InlineKeyboardButton("Option 2", callback_data=str(options[1])),
-        telebot.types.InlineKeyboardButton("Option 3", callback_data=str(options[2])),
-    )
+
+    kb.add(*[
+        telebot.types.InlineKeyboardButton(f"Option {i}", callback_data=str(recipe_id))
+        for i, recipe_id in enumerate(options, start=1)
+    ])
+
     bot.send_message(message.chat.id, "Pick one:", reply_markup=kb)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "reroll")
 def on_reroll(call):
     bot.answer_callback_query(call.id)
-    text, kb = build_dinner_options(call.message.chat.id)
+    text, kb = build_dinner_options(call.message.chat.id, call.from_user.id, reroll=True)
     try:
         bot.edit_message_text(
             text,
